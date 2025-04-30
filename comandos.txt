@@ -1,0 +1,118 @@
+Verificar el funcionamiento de la API:
+
+Usando el script status.py:
+
+bashdocker exec -it video_api python status.py
+
+O mediante un navegador web:
+
+Abre http://localhost:8000/docs en tu navegador
+Verás la documentación interactiva de la API generada por Swagger
+Puedes probar los endpoints directamente desde esta interfaz
+
+
+
+Paso 4: Realizar Consultas a la API
+Ejemplo 1: Consulta por tipo de entorno (Tipo 1)
+bashcurl -X POST http://localhost:8000/receive_characteristics \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": 1,
+    "video_name": "video1",
+    "environment_type": "parking_lot",
+    "object_name": null,
+    "color": null,
+    "proximity": null
+  }'
+Ejemplo 2: Consulta por objeto (Tipo 2)
+bashcurl -X POST http://localhost:8000/receive_characteristics \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": 2,
+    "video_name": null,
+    "environment_type": null,
+    "object_name": "umbrella",
+    "color": "0, 0, 0",
+    "proximity": "near"
+  }'
+Ejemplo 3: Consulta de conteo de objetos (Tipo 3)
+bashcurl -X POST http://localhost:8000/receive_characteristics \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": 3,
+    "video_name": null,
+    "environment_type": null,
+    "object_name": "person",
+    "color": null,
+    "proximity": null
+  }'
+Paso 5: Detener los Servicios
+Para detener todos los servicios, ejecuta en la terminal:
+bashdocker-compose down
+Si quieres eliminar también los volúmenes (esto borrará los datos persistentes):
+bashdocker-compose down -v
+Solución de Problemas
+La API no responde
+
+Verifica que todos los contenedores estén en ejecución:
+
+bashdocker ps
+
+Revisa los logs de la API:
+
+bashdocker logs video_api
+
+Asegúrate de que la base de datos esté funcionando:
+
+bashdocker logs postgres_db
+Error de conexión a la base de datos
+
+Verifica que las credenciales sean correctas en docker-compose.yml
+Comprueba que el servicio de PostgreSQL esté en ejecución
+Intenta reiniciar los servicios:
+
+bashdocker-compose down
+docker-compose up --build
+Modificación del Script de Estado para una URL Específica
+Si necesitas que el script status.py apunte a una URL específica como "ec2-3-83-246-89.compute-1.amazonaws.com:1234", puedes pasar la URL como parámetro:
+bashdocker exec -it video_api python status.py --url ec2-3-83-246-89.compute-1.amazonaws.com:1234
+O si prefieres modificar el script directamente, puedes editar la línea que define la URL por defecto.
+Ejemplo de Funcionamiento Completo
+
+Levanta los servicios:
+
+bashdocker-compose up --build
+
+En otra terminal, ejecuta el script de verificación:
+
+bashdocker exec -it video_api python status.py
+
+Deberías ver un mensaje como:
+
+=== Verificando estado de la API en localhost:8000 ===
+Intentando conectar a: http://localhost:8000/receive_characteristics
+Datos de la solicitud: {
+  "type": 1,
+  "video_name": "parking_lot_video_1",
+  "environment_type": "parking_lot",
+  "object_name": null,
+  "color": null,
+  "proximity": null
+}
+
+Código de estado: 200
+Respuesta: [
+  {
+    "video_name": "parking_lot_video_1"
+  }
+]
+
+✅ La API está funcionando correctamente.
+
+Explora los datos en PostgreSQL:
+
+bashdocker exec -it postgres_db psql -U postgres -d videodata -c "SELECT * FROM scenarios WHERE environment_type = 'parking_lot'"
+
+Detén los servicios cuando hayas terminado:
+
+bashdocker-compose down
