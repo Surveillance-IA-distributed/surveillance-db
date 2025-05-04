@@ -24,7 +24,7 @@ RUN mkdir -p app
 COPY API_cluster/app/api.py app/
 COPY API_cluster/app/models.py app/
 COPY API_cluster/app/services.py app/
-COPY API_cluster/app/tasks.py app/
+# COPY API_cluster/app/tasks.py app/
 COPY API_cluster/app/logger_config.py app/
 COPY main.py .
 COPY status.py .

@@ -1,7 +1,7 @@
 fastapi
 uvicorn
-celery
-redis
+#celery
+#redis
 psycopg2-binary
 pydantic
 requests

@@ -3,7 +3,7 @@ import os
 import sys
 import logging
 import psycopg2
-from celery.result import AsyncResult
+# from celery.result import AsyncResult
 from app.models import FrameCharacteristics
 
 # Configurar el logger
@@ -155,22 +155,22 @@ def start_frame_processing(frame: FrameCharacteristics):
         logger.error(f"Error al procesar el frame: {e}")
         return {"message": "Error en el procesamiento", "error": str(e)}
 
-def get_frame_task_status(task_id: str):
-    """
-    Consulta el estado de la tarea de procesamiento de un frame
+# def get_frame_task_status(task_id: str):
+#     """
+#     Consulta el estado de la tarea de procesamiento de un frame
     
-    Args:
-        task_id: Identificador de la tarea Celery
+#     Args:
+#         task_id: Identificador de la tarea Celery
         
-    Returns:
-        Diccionario con el estado actual de la tarea
-    """
-    task = AsyncResult(task_id)
+#     Returns:
+#         Diccionario con el estado actual de la tarea
+#     """
+#     task = AsyncResult(task_id)
 
-    if task.state == 'PENDING':
-        return {"status": "En proceso"}
-    elif task.state == 'SUCCESS':
-        return {"status": "Completado", "result": task.result}
-    elif task.state == 'FAILURE':
-        return {"status": "Fallido", "error": str(task.result)}
-    return {"status": "Estado desconocido"}
+#     if task.state == 'PENDING':
+#         return {"status": "En proceso"}
+#     elif task.state == 'SUCCESS':
+#         return {"status": "Completado", "result": task.result}
+#     elif task.state == 'FAILURE':
+#         return {"status": "Fallido", "error": str(task.result)}
+#     return {"status": "Estado desconocido"}
