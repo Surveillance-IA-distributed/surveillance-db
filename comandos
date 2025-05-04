@@ -1,0 +1,66 @@
+docker-compose up -d
+
+docker-compose ps
+
+python .\test_api.py
+
+http://localhost:8000/
+http://localhost:8000/docs
+
+# Conectar a la base de datos desde dentro del contenedor
+docker exec -it postgres_db psql -U postgres -d videodata
+
+# Una vez dentro de psql, puedes ejecutar consultas SQL:
+\dt
+
+-- Consultar todos los objetos
+SELECT * FROM objects;
+
+-- Consultar todos los escenarios
+SELECT * FROM scenarios;
+
+-- Consultar todas las características
+SELECT * FROM features;
+
+-- Consultar objetos por nombre
+SELECT * FROM objects WHERE object_name = 'person';
+
+-- Consultar escenarios por tipo de entorno
+SELECT * FROM scenarios WHERE environment_type = 'parking_lot';
+
+-- Consultar características de un video específico
+SELECT * FROM features WHERE video_name = 'video1';
+
+-- Consultas más complejas
+-- Contar objetos por tipo
+SELECT object_name, COUNT(*) FROM objects GROUP BY object_name;
+
+-- Objetos con una proximidad específica
+SELECT * FROM objects WHERE proximity = 'near';
+
+-- Buscar videos con ciertas características
+SELECT DISTINCT f.video_name 
+FROM features f 
+JOIN scenarios s ON f.video_name = s.video_name 
+WHERE f.object_name = 'person' AND s.environment_type = 'street';
+-- Encontrar todos los videos que contienen un objeto específico
+SELECT DISTINCT video_name FROM objects WHERE object_name = 'person';
+
+-- Buscar objetos cercanos
+SELECT * FROM objects WHERE proximity = 'near';
+
+-- Contar cuántos objetos hay en cada video
+SELECT video_name, COUNT(*) FROM objects GROUP BY video_name ORDER BY COUNT(*) DESC;
+
+-- Encontrar videos con ciertas condiciones ambientales
+SELECT * FROM scenarios WHERE weather = 'rainy' AND time_of_day = 'day';
+
+-- Buscar características de un objeto específico
+SELECT * FROM features WHERE object_name = 'person';
+
+-- Combinar información de múltiples tablas
+SELECT o.video_name, o.object_name, s.environment_type, s.weather
+FROM objects o
+JOIN scenarios s ON o.video_name = s.video_name
+WHERE o.object_name = 'person';
+
