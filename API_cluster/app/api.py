@@ -1,7 +1,8 @@
 from fastapi import APIRouter
-from app.models import ObjectDetection, FrameCharacteristics
-from app.services import start_frame_processing
+from app.models import ObjectDetection, FrameCharacteristics, Alert
+from app.services import start_frame_processing, execute_alerts
 from app.logger_config import setup_logger 
+from typing import List
 
 # Configurar el logger con el nombre del archivo actual
 logger = setup_logger(__name__)
@@ -21,6 +22,13 @@ async def receive_frame(frame: FrameCharacteristics):
         
     #return {"message": "El procesamiento del frame está en marcha", "task_id": task_id}
     return result
+
+@router.post("/execute_alerts")
+async def execute_alerts_endpoint(alerts: List[Alert]):
+    """
+    Endpoint que ejecuta las alertas y las consultas SQL correspondientes.
+    """
+    return execute_alerts(alerts)
 
 # Ruta para consultar el estado de la tarea de procesamiento de un frame
 # @router.post("/task_status/{task_id}")

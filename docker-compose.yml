@@ -1,90 +1,90 @@
-# version: '3'
+version: '3'
 
-# services:
-#   # Servicio de base de datos PostgreSQL
-#   postgres:
-#     image: postgres:13
-#     container_name: postgres_db
-#     environment:
-#       POSTGRES_USER: postgres
-#       POSTGRES_PASSWORD: postgres
-#       # Eliminada la variable POSTGRES_DB para evitar conflictos
-#     volumes:
-#       - postgres_data:/var/lib/postgresql/data
-#     ports:
-#       - "5432:5432"
-#     healthcheck:
-#       test: ["CMD-SHELL", "pg_isready -U postgres"]
-#       interval: 5s
-#       timeout: 5s
-#       retries: 5
-#     networks:
-#       - app_network
+services:
+  # Servicio de base de datos PostgreSQL
+  postgres:
+    image: postgres:13
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      # Eliminada la variable POSTGRES_DB para evitar conflictos
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app_network
 
-#   # Servicio para cargar datos iniciales
-#   data_loader:
-#     build:
-#       context: .
-#       dockerfile: data/Dockerfile
-#     container_name: data_loader
-#     depends_on:
-#       postgres:
-#         condition: service_healthy
-#     environment:
-#       DB_HOST: postgres
-#       DB_PORT: 5432
-#       DB_USER: postgres
-#       DB_PASSWORD: postgres
-#       DB_NAME: videodata
-#     volumes:
-#       - ./data_cluster:/app/data_cluster
-#     networks:
-#       - app_network
+  # Servicio para cargar datos iniciales
+  data_loader:
+    build:
+      context: .
+      dockerfile: data/Dockerfile
+    container_name: data_loader
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: videodata
+    volumes:
+      - ./data_cluster:/app/data_cluster
+    networks:
+      - app_network
 
-#   # Servicio Redis para Celery
-#   redis:
-#     image: redis:6
-#     container_name: redis
-#     ports:
-#       - "6379:6379"
-#     networks:
-#       - app_network
+  # Servicio Redis para Celery
+  redis:
+    image: redis:6
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - app_network
 
-#   # Servicio API
-#   api:
-#     build:
-#       context: .
-#       dockerfile: api/Dockerfile
-#     container_name: video_api
-#     ports:
-#       - "8000:8000"
-#     depends_on:
-#       postgres:
-#         condition: service_healthy
-#       redis:
-#         condition: service_started
-#       data_loader:
-#         condition: service_completed_successfully
-#     environment:
-#       DB_HOST: postgres
-#       DB_PORT: 5432
-#       DB_USER: postgres
-#       DB_PASSWORD: postgres
-#       DB_NAME: videodata
-#       REDIS_HOST: redis
-#       REDIS_PORT: 6379
-#       LOG_LEVEL: INFO
-#     volumes:
-#       - ./API_cluster:/app/API_cluster
-#     networks:
-#       - app_network
-#     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+  # Servicio API
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    container_name: video_api
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      data_loader:
+        condition: service_completed_successfully
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: videodata
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      LOG_LEVEL: INFO
+    volumes:
+      - ./API_cluster:/app/API_cluster
+    networks:
+      - app_network
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
-# # Volúmenes persistentes
-# volumes:
-#   postgres_data:
+# Volúmenes persistentes
+volumes:
+  postgres_data:
 
-# # Redes
-# networks:
-#   app_network:
-#     driver: bridge
+# Redes
+networks:
+  app_network:
+    driver: bridge

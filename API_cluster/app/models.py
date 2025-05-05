@@ -64,3 +64,8 @@ class FrameCharacteristics(BaseModel):
     object_name: Optional[str]  
     color: Optional[str] 
     proximity: Optional[str]
+
+
+class Alert(BaseModel):
+    alert: str
+    sql: str
