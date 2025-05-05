@@ -145,6 +145,44 @@ def create_tables(cursor):
             orientation VARCHAR(255),
             type VARCHAR(255)
         )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS objects_new (
+            object_name VARCHAR(255),
+            video_name VARCHAR(255),
+            x1 INT,
+            y1 INT,
+            x2 INT,
+            y2 INT,
+            color VARCHAR(255),
+            proximity VARCHAR(255),
+            sec INT
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS scenarios_new (
+            video_name VARCHAR(255),
+            environment_type VARCHAR(255),
+            description TEXT,
+            weather VARCHAR(255),
+            time_of_day VARCHAR(255),
+            terrain VARCHAR(255),
+            crowd_level VARCHAR(255),
+            lighting VARCHAR(255)
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS features_new (
+            video_name VARCHAR(255),
+            sec INT,
+            object_name VARCHAR(255),
+            description TEXT,
+            color1 VARCHAR(255),
+            color2 VARCHAR(255),
+            size VARCHAR(255),
+            orientation VARCHAR(255),
+            type VARCHAR(255)
+        )
         """
     ]
     for query in table_queries:
