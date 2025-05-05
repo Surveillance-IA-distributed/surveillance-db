@@ -4,7 +4,7 @@ import sys
 import logging
 import psycopg2
 # from celery.result import AsyncResult
-from app.models import FrameCharacteristics
+from app.models import FrameCharacteristics, Alert
 
 # Configurar el logger
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -174,3 +174,41 @@ def start_frame_processing(frame: FrameCharacteristics):
 #     elif task.state == 'FAILURE':
 #         return {"status": "Fallido", "error": str(task.result)}
 #     return {"status": "Estado desconocido"}
+
+
+def execute_alerts(alerts):
+    """
+    Ejecuta las alertas recibidas, ejecutando las consultas SQL asociadas en la base de datos.
+
+    Args:
+        alerts: Lista de alertas con SQL asociado
+
+    Returns:
+        Resultado de las alertas procesadas.
+    """
+    results = []
+    conn = connect_to_postgres()
+    if not conn:
+        return {"message": "Error de conexión a la base de datos"}
+
+    cursor = conn.cursor()
+
+    try:
+        for alert in alerts:
+            logger.info(f"⚠️ Ejecutando alerta: {alert.alert}")
+            logger.info(f"📄 SQL: {alert.sql}")
+            result = execute_query(cursor, alert.sql)
+            results.append({
+                "alert": alert.alert,
+                "sql": alert.sql,
+                "result": result
+            })
+        
+        # Cerrar la conexión después de procesar todas las alertas
+        conn.close()
+
+        return {"results": results}
+
+    except Exception as e:
+        logger.error(f"Error al ejecutar las alertas: {e}")
+        return {"message": "Error al procesar las alertas", "error": str(e)}
