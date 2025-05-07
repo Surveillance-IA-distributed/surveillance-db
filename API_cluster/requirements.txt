@@ -1,7 +1,9 @@
 fastapi
 uvicorn
-#celery
-#redis
 psycopg2-binary
 pydantic
 requests
+email-validator
+python-multipart
+pydantic[email]
+fastapi-mail
