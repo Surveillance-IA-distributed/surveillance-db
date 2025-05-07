@@ -28,7 +28,7 @@ async def execute_alerts_endpoint(alerts: List[Alert]):
     """
     Endpoint que ejecuta las alertas y las consultas SQL correspondientes.
     """
-    return execute_alerts(alerts)
+    return await execute_alerts(alerts)
 
 # Ruta para consultar el estado de la tarea de procesamiento de un frame
 # @router.post("/task_status/{task_id}")

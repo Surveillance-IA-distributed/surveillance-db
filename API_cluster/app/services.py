@@ -3,8 +3,9 @@ import os
 import sys
 import logging
 import psycopg2
-# from celery.result import AsyncResult
 from app.models import FrameCharacteristics, Alert
+from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
+import json
 
 # Configurar el logger
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -175,8 +176,7 @@ def start_frame_processing(frame: FrameCharacteristics):
 #         return {"status": "Fallido", "error": str(task.result)}
 #     return {"status": "Estado desconocido"}
 
-
-def execute_alerts(alerts):
+async def execute_alerts(alerts):
     """
     Ejecuta las alertas recibidas, ejecutando las consultas SQL asociadas en la base de datos.
 
@@ -186,29 +186,62 @@ def execute_alerts(alerts):
     Returns:
         Resultado de las alertas procesadas.
     """
+        
     results = []
     conn = connect_to_postgres()
     if not conn:
         return {"message": "Error de conexión a la base de datos"}
-
+    
     cursor = conn.cursor()
+
+    conf = ConnectionConfig(
+        MAIL_USERNAME=os.environ.get("MAIL_USERNAME"),
+        MAIL_PASSWORD=os.environ.get("MAIL_PASSWORD"),
+        MAIL_FROM=os.environ.get("MAIL_FROM"),
+        MAIL_PORT=587,
+        MAIL_SERVER=os.environ.get("MAIL_SERVER"),
+        MAIL_STARTTLS=True,     # En lugar de MAIL_TLS
+        MAIL_SSL_TLS=False,     # En lugar de MAIL_SSL
+        USE_CREDENTIALS=True,
+        VALIDATE_CERTS=True
+    )
+    fm = FastMail(conf)
+    print("Enviando correo a:", os.environ.get("MAIL_TO"))
+    logger.info(f"Enviando correo a: {os.environ.get('MAIL_TO')}")
 
     try:
         for alert in alerts:
             logger.info(f"⚠️ Ejecutando alerta: {alert.alert}")
-            logger.info(f"📄 SQL: {alert.sql}")
             result = execute_query(cursor, alert.sql)
             results.append({
                 "alert": alert.alert,
                 "sql": alert.sql,
                 "result": result
             })
-        
-        # Cerrar la conexión después de procesar todas las alertas
-        conn.close()
+
+            if result:
+                body = f"""
+                <h3>Se activó una alerta:</h3>
+                <p><strong>{alert.alert}</strong></p>
+                <pre>{json.dumps(result, indent=2)}</pre>
+                """
+                message = MessageSchema(
+                    subject=f"Alerta activada: {alert.alert}",
+                    recipients=[os.environ.get("MAIL_TO")],
+                    body=body,
+                    subtype="html"
+                )
+                await fm.send_message(message)
+                logger.info(f"Correo enviado a: {os.environ.get('MAIL_TO')}")
+            else:
+                logger.info(f"No se encontraron resultados para la alerta: {alert.alert}")
+                
 
         return {"results": results}
-
+    
     except Exception as e:
         logger.error(f"Error al ejecutar las alertas: {e}")
         return {"message": "Error al procesar las alertas", "error": str(e)}
+    
+    finally:
+        conn.close()
